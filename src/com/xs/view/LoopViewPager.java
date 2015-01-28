@@ -239,7 +239,6 @@ public class LoopViewPager extends ViewGroup {
 
     private final Runnable mEndScrollRunnable = new Runnable() {
         public void run() {
-            Log.v("xs", "end of scroll--->" + mCurItem);
             setScrollState(SCROLL_STATE_IDLE);
             populate();
         }
@@ -493,10 +492,7 @@ public class LoopViewPager extends ViewGroup {
         int tempItemp = mCurItem + (expectPos - currentPos);
         mPopulatePending = false;
 
-        Log.v("xs", "setCurrentItem--->" + tempItemp);
-
         setCurrentItemInternal(tempItemp, !mFirstLayout, false);
-//        setCurrentItemInternal(item, !mFirstLayout, false);
     }
 
     /**
@@ -527,13 +523,6 @@ public class LoopViewPager extends ViewGroup {
             setScrollingCacheEnabled(false);
             return;
         }
-
-        // some of change
-//        if (item < 0) {
-//            item = 0;
-//        } else if (item >= mAdapter.getCount()) {
-//            item = mAdapter.getCount() - 1;
-//        }
 
         final int pageLimit = mOffscreenPageLimit;
         if (item > (mCurItem + pageLimit) || item < (mCurItem - pageLimit)) {
@@ -569,12 +558,7 @@ public class LoopViewPager extends ViewGroup {
         int destX = 0;
         if (curInfo != null) {
             final int width = getClientWidth();
-//            destX = (int) (width * Math.max(mFirstOffset,
-//                    Math.min(curInfo.offset, mLastOffset)));
-
             destX = (int) (width * curInfo.offset);
-            Log.v("xs", "destX---->" + destX);
-
         }
         if (smoothScroll) {
             smoothScrollTo(destX, 0, velocity);
@@ -810,8 +794,6 @@ public class LoopViewPager extends ViewGroup {
         int sx = getScrollX();
         int sy = getScrollY();
 
-        Log.v("xs", "smoothScrollTo---->" + x + "---->" + sx);
-
         int dx = x - sx;
         int dy = y - sy;
         if (dx == 0 && dy == 0) {
@@ -1036,16 +1018,12 @@ public class LoopViewPager extends ViewGroup {
             final float leftWidthNeeded = clientWidth <=0 ? 0 :
                     2.f - curItem.widthFactor + (float) getPaddingLeft() / (float) clientWidth;
 
-            Log.v("xs", "curItem---->" + mCurItem  + "---->" + itemIndex + "---->" + startPos + "--->" + mItems.size());
-
             for (int pos = mCurItem -1; pos>=mCurItem-mExpectedAdapterCount; pos--) {
                 if (extraWidthLeft >= leftWidthNeeded && pos < endPos) {
                     if (ii == null) {
                         break;
                     }
-                    Log.v("xs", "pos---->" + pos + "---->" + ii.index);
                     if (pos == ii.index && !ii.scrolling) {
-                        Log.v("xs", "remove itemIndex---->" + itemIndex);
                         mItems.remove(itemIndex);
                         mAdapter.destroyItem(this, ii.position, ii.object);
                         itemIndex--;
@@ -1056,10 +1034,8 @@ public class LoopViewPager extends ViewGroup {
                     extraWidthLeft += ii.widthFactor;
                     itemIndex--;
                     ii = itemIndex >=0 ? mItems.get(itemIndex) : null;
-                    Log.v("xs", "add extraWidthLeft---->" + itemIndex);
                 } else {
                     // pos是实际的位置，itemIndex是索引
-                    Log.v("xs", "left add item---->" + (itemIndex+1));
                     ii = addNewItem(pos, itemIndex+1);
                     extraWidthLeft += ii.widthFactor;
                     curIndex++;
@@ -1067,35 +1043,12 @@ public class LoopViewPager extends ViewGroup {
                 }
             }
 
-//            int leftPage = 0;
-//            int leftIndex = mCurItem -1;
-//            for (int pos=curIndex-1; pos >= 0; pos--) {
-//                ItemInfo itemInfo = mItems.get(pos);
-//                if (itemInfo.index >= startPos) {
-//                    leftPage++;
-//                    itemIndex--;
-//                    leftIndex--;
-//                } else if (!ii.scrolling) {
-//                    mItems.remove(pos);
-//                    mAdapter.destroyItem(this, itemInfo.position, itemInfo.object);
-//                    pos--;
-//                    curIndex--;
-//                }
-//            }
-//            while (leftPage <pageLimit) {
-//                addNewItem(leftIndex, itemIndex+1);
-//                leftPage++;
-//                leftIndex--;
-//            }
-
             float extraWidthRight = curItem.widthFactor;
             itemIndex = curIndex + 1;
             if (extraWidthRight < 2.f) {
                 ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
                 final float rightWidthNeeded = clientWidth <=0 ? 0 :
                         (float) getPaddingRight() / (float) clientWidth + 2.f;
-
-                Log.v("xs", "right---->" + itemIndex + "--->" + mCurItem + "---->" + mItems.size());
 
                 for (int pos = mCurItem +1 ; pos <= mCurItem+mExpectedAdapterCount ; pos++) {
                     if (extraWidthRight >= rightWidthNeeded && pos > endPos) {
@@ -1112,7 +1065,6 @@ public class LoopViewPager extends ViewGroup {
                         itemIndex++;
                         ii = itemIndex < mItems.size() ? mItems.get(itemIndex) : null;
                     } else {
-                        Log.v("xs", "rightAdd---->" + itemIndex);
                         ii = addNewItem(pos, itemIndex);
                         itemIndex++;
                         extraWidthRight += ii.widthFactor;
@@ -1120,26 +1072,6 @@ public class LoopViewPager extends ViewGroup {
                     }
                 }
             }
-
-//            int rightPage = 0;
-//            int rightIndex = mCurItem+1;
-//            for (int pos=curIndex+1; pos < mItems.size(); pos++) {
-//                ItemInfo itemInfo = mItems.get(pos);
-//                if (itemInfo.index <= endPos) {
-//                    rightPage++;
-//                    itemIndex++;
-//                    rightIndex++;
-//                } else if (!ii.scrolling) {
-//                    mItems.remove(pos);
-//                    mAdapter.destroyItem(this, ii.position, ii.object);
-//                }
-//            }
-//            while (rightPage <pageLimit) {
-//                addNewItem(rightIndex, itemIndex+1);
-//                rightPage++;
-//                rightIndex++;
-//            }
-
 
             calculatePageOffsets(curItem, curIndex, oldCurInfo);
         }
@@ -1261,9 +1193,6 @@ public class LoopViewPager extends ViewGroup {
         final int itemCount = mItems.size();
         float offset = curItem.offset;
         int pos = curItem.position - 1;
-//        mFirstOffset = curItem.position == 0 ? curItem.offset : -Float.MAX_VALUE;
-//        mLastOffset = curItem.position == N - 1 ?
-//                curItem.offset + curItem.widthFactor - 1 : Float.MAX_VALUE;
         mFirstOffset = curItem.position == 0 ? curItem.offset : -Float.MAX_VALUE;
         mLastOffset = curItem.position == N - 1 ? curItem.offset + curItem.widthFactor-1 : Float.MAX_VALUE;
 
@@ -1275,13 +1204,10 @@ public class LoopViewPager extends ViewGroup {
             }
             offset -= ii.widthFactor + marginOffset;
             ii.offset = offset;
-//            if (ii.position == 0) mFirstOffset = offset;
-//            Log.v("xs", "min offset--->" + ii.position + "----->" + offset);
         }
         offset = curItem.offset + curItem.widthFactor + marginOffset;
         pos = curItem.position + 1;
 
-        Log.v("xs", "offset---->" + offset + "---->" + pos + "---->" + curIndex + "----->" + itemCount);
         // Next pages
         for (int i = curIndex + 1; i < itemCount; i++, pos++) {
             final ItemInfo ii = mItems.get(i);
@@ -1479,8 +1405,6 @@ public class LoopViewPager extends ViewGroup {
          */
         int size = getChildCount();
 
-        Log.v("xs", "on meause---->" + size);
-
         for (int i = 0; i < size; ++i) {
             final View child = getChildAt(i);
             if (child.getVisibility() != GONE) {
@@ -1659,8 +1583,6 @@ public class LoopViewPager extends ViewGroup {
             }
         }
 
-        Log.v("xs", "onlayout---->" + getScrollX());
-
         final int childWidth = width - paddingLeft - paddingRight;
         // Page views. Do this once we have the right padding offsets from above.
         for (int i = 0; i < count; i++) {
@@ -1687,8 +1609,6 @@ public class LoopViewPager extends ViewGroup {
                     if (DEBUG) Log.v(TAG, "Positioning #" + i + " " + child + " f=" + ii.object
                             + ":" + childLeft + "," + childTop + " " + child.getMeasuredWidth()
                             + "x" + child.getMeasuredHeight());
-
-//                    Log.v("xs", "Positioning #" + i + "----->" + childLeft + "---->" + childTop + "---->" + getScrollX());
 
                     child.layout(childLeft, childTop,
                             childLeft + child.getMeasuredWidth(),
@@ -2107,25 +2027,15 @@ public class LoopViewPager extends ViewGroup {
                     mPopulatePending = true;
                     final int width = getClientWidth();
                     final int scrollX = getScrollX();
-
-                    Log.v("xs", "motionEvent up");
-
                     final ItemInfo ii = infoForCurrentScrollPosition();
                     final int currentPage = ii.position;
-
                     final float pageOffset = (((float) scrollX / width) - ii.offset) / ii.widthFactor;
-
-                    Log.v("xs", "currentPage---->" + currentPage + "---->pageOffset---->" + pageOffset);
-
                     final int activePointerIndex =
                             MotionEventCompat.findPointerIndex(ev, mActivePointerId);
                     final float x = MotionEventCompat.getX(ev, activePointerIndex);
                     final int totalDelta = (int) (x - mInitialMotionX);
                     int nextPage = determineTargetPage(ii, currentPage, pageOffset, initialVelocity,
                             totalDelta);
-
-                    Log.v("xs", "nextPage---->" + nextPage);
-
 
                     setCurrentItemInternal(nextPage, true, true, initialVelocity);
 
@@ -2249,11 +2159,8 @@ public class LoopViewPager extends ViewGroup {
             final float leftBound = offset;
             final float rightBound = offset + ii.widthFactor + marginOffset;
 
-//            Log.v("xs", "i---->" + i + "---->offset---->" + offset + "----->leftBound---->" + leftBound + "---->" + scrollOffset);
-
             if (first || scrollOffset >= leftBound) {
                 if (scrollOffset < rightBound || i == mItems.size() - 1) {
-//                    Log.v("xs", "I am here---->" + i);
                     return ii;
                 }
             } else {
@@ -2277,8 +2184,7 @@ public class LoopViewPager extends ViewGroup {
         if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity) {
             targetPage = velocity > 0 ? currentPage : currentPage + 1;
         } else {
-            final float truncator = currentPage >= mCurItem ? 0.4f : 0.6f;
-//            targetPage = (int) (currentPage + pageOffset + truncator);
+//            final float truncator = currentPage >= mCurItem ? 0.4f : 0.6f;
             if (currentPage >= mCurItem) {
                 targetPage = pageOffset > 0.6f ? currentPage+1 : currentPage;
             } else {
@@ -2291,10 +2197,6 @@ public class LoopViewPager extends ViewGroup {
             final ItemInfo lastItem = mItems.get(mItems.size() - 1);
 
             // Only let the user target pages we have items for
-            // 做过更改
-//            targetPage = Math.max(firstItem.position, Math.min(targetPage, lastItem.position));
-//            int tempIndex = Math.max(firstItem.index, Math.min(itemInfo.index, lastItem.index));
-//            targetPage = tempIndex == itemInfo.index ? targetPage : Math.abs(tempIndex+mExpectedAdapterCount) % mExpectedAdapterCount;
             targetPage = Math.max(firstItem.position, Math.min(targetPage, lastItem.position));
         }
 
