@@ -33,24 +33,22 @@ public class LoopViewPagerDemo extends FragmentActivity {
             }
         });
 
-        FragmentPagerAdapter adapter = new GoogleMusicAdapter(getSupportFragmentManager());
+        FragmentPagerAdapter adapter = new TestAdapter(getSupportFragmentManager());
 
         mLoopViewPager = (LoopViewPager) findViewById(R.id.loop_viewpager);
         mLoopViewPager.setAdapter(adapter);
         mLoopViewPager.setLoopEnable(true);
     }
 
-    class GoogleMusicAdapter extends FragmentPagerAdapter {
+    class TestAdapter extends FragmentPagerAdapter {
 
-        public GoogleMusicAdapter(FragmentManager fm) {
+        public TestAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
-
             position = (CONTENT.length + position%CONTENT.length)%CONTENT.length;
-
             ListViewFragment fragment = new ListViewFragment(CONTENT[position]);
             return fragment;
         }
