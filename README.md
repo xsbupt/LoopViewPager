@@ -22,14 +22,15 @@ For example, is the data size if 4, and the page limit is 1, and the four pa .
 
 Some Demo Code
 --------------
-private static final String[] CONTENT = new String[] {"A", "B", "C", "D"};
-FragmentPagerAdapter adapter = new TestAdapter(getSupportFragmentManager());
 
-LoopViewPager mLoopViewPager = (LoopViewPager) findViewById(R.id.loop_viewpager);
-mLoopViewPager.setAdapter(adapter);
-mLoopViewPager.setLoopEnable(true);
+        private static final String[] CONTENT = new String[] {"A", "B", "C", "D"};
+        FragmentPagerAdapter adapter = new TestAdapter(getSupportFragmentManager());
 
-class TestAdapter extends FragmentPagerAdapter {
+        LoopViewPager mLoopViewPager = (LoopViewPager) findViewById(R.id.loop_viewpager);
+        mLoopViewPager.setAdapter(adapter);
+        mLoopViewPager.setLoopEnable(true);
+
+        class TestAdapter extends FragmentPagerAdapter {
 
         public TestAdapter(FragmentManager fm) {
             super(fm);
