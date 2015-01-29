@@ -16,9 +16,7 @@ import com.xs.view.R;
  */
 public class LoopViewPagerDemo extends FragmentActivity {
 
-//    private static final String[] CONTENT = new String[]{"A", "BBBBBB", "C", "DDDDDDD", "E", "FFFFFFF", "G", "HHHHHHHH"};
     private static final String[] CONTENT = new String[] {"A", "B", "C", "D"};
-
     private LoopViewPager mLoopViewPager;
 
     @Override
@@ -39,10 +37,7 @@ public class LoopViewPagerDemo extends FragmentActivity {
 
         mLoopViewPager = (LoopViewPager) findViewById(R.id.loop_viewpager);
         mLoopViewPager.setAdapter(adapter);
-
-//        mOriginalViewPager = (OriginalViewPager) findViewById(R.id.loop_viewpager);
-//        mOriginalViewPager.setAdapter(adapter);
-
+        mLoopViewPager.setLoopEnable(true);
     }
 
     class GoogleMusicAdapter extends FragmentPagerAdapter {

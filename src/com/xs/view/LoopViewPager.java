@@ -123,10 +123,8 @@ public class LoopViewPager extends ViewGroup {
     };
 
     private final ArrayList<ItemInfo> mItems = new ArrayList<ItemInfo>();
-    // 当前的存储元素的开始
-    private int mStart = -1;
-    private int mEnd = -1;
 
+    private boolean mLoopEnable = true;
     private final ItemInfo mTempItem = new ItemInfo();
 
     private final Rect mTempRect = new Rect();
@@ -475,6 +473,15 @@ public class LoopViewPager extends ViewGroup {
 
     private int getClientWidth() {
         return getMeasuredWidth() - getPaddingLeft() - getPaddingRight();
+    }
+
+    /**
+     * to enable or disable loop
+     *
+     * @param enable True if the viewpager can loop, false otherwise.
+     */
+    public void setLoopEnable(boolean enable) {
+        mLoopEnable = enable;
     }
 
     /**
@@ -827,30 +834,13 @@ public class LoopViewPager extends ViewGroup {
         ViewCompat.postInvalidateOnAnimation(this);
     }
 
-//    ItemInfo addNewItem(int position, int index) {
-//        ItemInfo ii = new ItemInfo();
-//        ii.position = position;
-//        ii.object = mAdapter.instantiateItem(this, position);
-//        ii.widthFactor = mAdapter.getPageWidth(position);
-//        if (index < 0 || index >= mItems.size()) {
-//            mItems.add(ii);
-//        } else {
-//            mItems.add(index, ii);
-//        }
-//        return ii;
-//    }
-
     ItemInfo addNewItem(int position, int index) {
         ItemInfo ii = new ItemInfo();
         ii.index = position;
         ii.position = position;
         int tempPos = Math.abs(mExpectedAdapterCount + position%mExpectedAdapterCount) % mExpectedAdapterCount;
-
         ii.object = mAdapter.instantiateItem(this, position);
-
-
         ii.widthFactor = mAdapter.getPageWidth(tempPos);
-
         if (index < 0 || index >= mItems.size()) {
             mItems.add(ii);
         } else {
@@ -968,12 +958,14 @@ public class LoopViewPager extends ViewGroup {
         mAdapter.startUpdate(this);
 
         final int pageLimit = mOffscreenPageLimit;
-//        final int startPos = Math.max(0, mCurItem - pageLimit);
-//        final int N = mAdapter.getCount();
-//        final int endPos = Math.min(N-1, mCurItem + pageLimit);
-        final int startPos = mCurItem - pageLimit;
+        int startPos = Math.max(0, mCurItem - pageLimit);
         final int N = mAdapter.getCount();
-        final int endPos = mCurItem + pageLimit;
+        int endPos = Math.min(N-1, mCurItem + pageLimit);
+
+        if (mLoopEnable) {
+            startPos = mCurItem - pageLimit;
+            endPos = mCurItem + pageLimit;
+        }
 
         if (N != mExpectedAdapterCount) {
             String resName;
@@ -1011,7 +1003,6 @@ public class LoopViewPager extends ViewGroup {
         if (curItem != null) {
 
             float extraWidthLeft = 0.f;
-            // 当前的页面在页面信息列表中的index
             int itemIndex = curIndex - 1;
             ItemInfo ii = itemIndex >= 0 ? mItems.get(itemIndex) : null;
             final int clientWidth = getClientWidth();
@@ -1019,7 +1010,10 @@ public class LoopViewPager extends ViewGroup {
                     2.f - curItem.widthFactor + (float) getPaddingLeft() / (float) clientWidth;
 
             for (int pos = mCurItem -1; pos>=mCurItem-mExpectedAdapterCount; pos--) {
-                if (extraWidthLeft >= leftWidthNeeded && pos < endPos) {
+                if (!mLoopEnable && pos < 0) {
+                    break;
+                }
+                if (extraWidthLeft >= leftWidthNeeded && pos < startPos) {
                     if (ii == null) {
                         break;
                     }
@@ -1035,7 +1029,6 @@ public class LoopViewPager extends ViewGroup {
                     itemIndex--;
                     ii = itemIndex >=0 ? mItems.get(itemIndex) : null;
                 } else {
-                    // pos是实际的位置，itemIndex是索引
                     ii = addNewItem(pos, itemIndex+1);
                     extraWidthLeft += ii.widthFactor;
                     curIndex++;
@@ -1051,6 +1044,9 @@ public class LoopViewPager extends ViewGroup {
                         (float) getPaddingRight() / (float) clientWidth + 2.f;
 
                 for (int pos = mCurItem +1 ; pos <= mCurItem+mExpectedAdapterCount ; pos++) {
+                    if (!mLoopEnable && pos >=N) {
+                        break;
+                    }
                     if (extraWidthRight >= rightWidthNeeded && pos > endPos) {
                         if (ii == null) {
                             break;
@@ -2143,9 +2139,8 @@ public class LoopViewPager extends ViewGroup {
         for (int i = 0; i < mItems.size(); i++) {
             ItemInfo ii = mItems.get(i);
             float offset;
-            // 这里做了更改
-//            if (!first && ii.position != lastPos + 1) {
-            if (!first && ii.index != lastIndex + 1) {
+            if (!first && ii.position != lastPos + 1) {
+//            if (!first && ii.index != lastIndex + 1) {
                 // Create a synthetic item for a missing page.
                 ii = mTempItem;
                 ii.offset = lastOffset + lastWidth + marginOffset;
@@ -2158,7 +2153,6 @@ public class LoopViewPager extends ViewGroup {
 
             final float leftBound = offset;
             final float rightBound = offset + ii.widthFactor + marginOffset;
-
             if (first || scrollOffset >= leftBound) {
                 if (scrollOffset < rightBound || i == mItems.size() - 1) {
                     return ii;
@@ -2167,8 +2161,6 @@ public class LoopViewPager extends ViewGroup {
                 return lastItem;
             }
             first = false;
-            // 这里做了更改
-            //lastPos = ii.position;
             lastPos = ii.position;
             lastIndex = ii.index;
             lastOffset = offset;
@@ -2184,11 +2176,15 @@ public class LoopViewPager extends ViewGroup {
         if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity) {
             targetPage = velocity > 0 ? currentPage : currentPage + 1;
         } else {
-//            final float truncator = currentPage >= mCurItem ? 0.4f : 0.6f;
-            if (currentPage >= mCurItem) {
-                targetPage = pageOffset > 0.6f ? currentPage+1 : currentPage;
+            final float truncator = currentPage >= mCurItem ? 0.4f : 0.6f;
+            if (!mLoopEnable) {
+                targetPage = (int) (currentPage + pageOffset + truncator);
             } else {
-                targetPage = pageOffset > 0.4f ? mCurItem : currentPage;
+                if (currentPage >= mCurItem) {
+                    targetPage = pageOffset > 0.6f ? currentPage + 1 : currentPage;
+                } else {
+                    targetPage = pageOffset > 0.4f ? mCurItem : currentPage;
+                }
             }
         }
 
